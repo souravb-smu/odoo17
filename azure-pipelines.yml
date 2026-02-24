@@ -1,19 +1,8 @@
 trigger:
-- main   # change if your branch is different (e.g. master)
+- main
 
 pool:
-  vmImage: ubuntu-latest
+  name: Default
 
 steps:
-- script: echo "Pipeline started successfully!"
-  displayName: "Start Message"
-
-- script: |
-    echo "Checking environment..."
-    echo "Build ID: $(Build.BuildId)"
-    echo "Repository: $(Build.Repository.Name)"
-    echo "Branch: $(Build.SourceBranchName)"
-  displayName: "Print Build Info"
-
-- script: echo "Pipeline completed successfully!"
-  displayName: "Finish Message"
+- script: echo "Running on self-hosted agent"
