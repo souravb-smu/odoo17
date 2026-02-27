@@ -1,8 +1,10 @@
 trigger:
 - main
 
+
 pool:
-  name: Default      # <-- your actual pool name
+  vmImage: 'ubuntu-latest'
+
 
 variables:
   stagePath: '/home/azureuser/deploy-temp'
