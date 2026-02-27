@@ -8,11 +8,10 @@ variables:
   stagePath: '/opt/odoo17/deploy-temp'
   updateScript: '/opt/odoo17/update_code.sh'
 
+
 steps:
-- task: Checkout@1
-  displayName: 'Checkout repository'
-  inputs:
-    clean: true
+- checkout: self
+  clean: true
 
 - task: CopyFilesOverSSH@0
   displayName: 'Sync code to VM staging directory'
