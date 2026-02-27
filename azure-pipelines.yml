@@ -16,13 +16,13 @@ steps:
 
 
 
+
 - task: SSH@0
-  displayName: 'Run update script on VM (with password test)'
+  displayName: 'Find SSH user'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      printf '%s\n' "Password123@$" | /usr/bin/sudo -S -k /bin/chmod +x /opt/odoo17/update_code.sh
-      printf '%s\n' "Password123@$" | /usr/bin/sudo -S -k /opt/odoo17/update_code.sh
-    readyTimeout: '20000'
+      whoami
+      echo "Successful! This is the real SSH username."
 
