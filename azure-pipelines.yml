@@ -5,7 +5,7 @@ pool:
   name: Default      # <-- your actual pool name
 
 variables:
-  stagePath: '/opt/odoo17/deploy-temp'
+  stagePath: '/home/azureuser/deploy-temp'
   updateScript: '/opt/odoo17/update_code.sh'
 
 
