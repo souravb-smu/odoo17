@@ -24,6 +24,6 @@ steps:
     commands: |
       sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
     
-      #sudo chmod +x $(updateScript)
+      sudo chmod +x $(updateScript)
       sudo $(updateScript)
     readyTimeout: '20000'
