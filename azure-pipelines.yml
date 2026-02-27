@@ -16,14 +16,12 @@ steps:
 
 
 
-
 - task: SSH@0
   displayName: 'Run update script on VM'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      sudo chmod +x $(updateScript)
-      sudo $(updateScript)
+      /usr/bin/sudo -n /usr/bin/chmod +x "$(updateScript)"
+      /usr/bin/sudo -n "$(updateScript)"
     readyTimeout: '20000'
-
