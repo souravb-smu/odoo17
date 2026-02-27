@@ -18,11 +18,12 @@ steps:
 
 
 - task: SSH@0
-  displayName: 'Find SSH user'
+  displayName: 'Run update script on VM'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      whoami
-      echo "Successful! This is the real SSH username."
+      sudo chmod +x $(updateScript)
+      sudo $(updateScript)
+    readyTimeout: '20000'
 
