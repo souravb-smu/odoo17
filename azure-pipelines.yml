@@ -14,14 +14,14 @@ steps:
 
 
 
+
 - task: SSH@0
-  displayName: 'Run update script on VM'
+  displayName: 'Run update script on VM (with password for test)'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      whoami
-      sudo -l
-      /usr/bin/sudo -n /bin/chmod +x /opt/odoo17/update_code.sh
-      /usr/bin/sudo -n /opt/odoo17/update_code.sh
+      # Use printf; -p '' suppresses prompt text; -k ignores cached credentials
+      printf '%s\n' "Password123@$" | /usr/bin/sudo -S -p '' -k /bin/chmod +x "$(updateScript)"
+      printf '%s\n' "Password123@$" | /usr/bin/sudo -S -p '' -k "$(updateScript)"
     readyTimeout: '20000'
