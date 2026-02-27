@@ -38,6 +38,6 @@ steps:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      chmod +x $(updateScript)
-      $(updateScript)
+      echo "$(SUDO_PASSWORD)" | /usr/bin/sudo -S /bin/chmod +x "$(updateScript)"
+      echo "$(SUDO_PASSWORD)" | /usr/bin/sudo -S "$(updateScript)"
     readyTimeout: '20000'
