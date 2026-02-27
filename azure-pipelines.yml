@@ -12,25 +12,7 @@ steps:
 - checkout: self
   clean: true
 
-- task: CopyFilesOverSSH@0
-  displayName: 'Sync code to VM staging directory'
-  inputs:
-    sshEndpoint: 'ssh-odoo17'
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: |
-      **/*
-      !.git/**
-      !.github/**
-      !**/filestore/**
-      !**/.local/share/Odoo/**
-      !.DS_Store
-      !addons/**               
-      !custom-addons/**
 
-    targetFolder: '$(stagePath)'
-    cleanTargetFolder: true
-    overwrite: true
-    failOnEmptySource: true
 
 - task: SSH@0
   displayName: 'Run update script on VM'
@@ -38,6 +20,6 @@ steps:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      sudo chmod +x $(updateScript)
-      sudo $(updateScript)
+      /usr/bin/sudo -n /bin/chmod +x /opt/odoo17/update_code.sh
+      /usr/bin/sudo -n /opt/odoo17/update_code.sh
     readyTimeout: '20000'
