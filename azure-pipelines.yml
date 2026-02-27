@@ -22,5 +22,5 @@ steps:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      echo 'Password123@$' | sudo -S /usr/bin/chmod +x /opt/odoo17/update_code.s
+      echo 'Password123@$' | sudo -S /usr/bin/chmod +x /opt/odoo17/update_code.sh
     readyTimeout: '20000'
