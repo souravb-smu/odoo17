@@ -23,14 +23,9 @@ steps:
       !.github/**
       !**/filestore/**
       !**/.local/share/Odoo/**
-
-      # -----------------------------------------
-      # ⛔ IGNORE ADDONS YOU DO NOT WANT TO DEPLOY
-      # -----------------------------------------
-      !addons/**                 # ignore entire addons folder
-      !custom-addons/**          # ignore your custom-addons
-      !some-other-addons/**      # (add more if needed)
-      # -----------------------------------------
+      !.DS_Store
+      !addons/**               
+      !custom-addons/**
 
     targetFolder: '$(stagePath)'
     cleanTargetFolder: true
