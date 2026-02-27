@@ -22,5 +22,6 @@ steps:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      /usr/bin/sudo -n /usr/bin/env bash "$(updateScript)"
+      /usr/bin/sudo -n /usr/bin/chmod +x /opt/odoo17/update_code.sh
+      /usr/bin/sudo -n /opt/odoo17/update_code.sh
     readyTimeout: '20000'
