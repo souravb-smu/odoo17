@@ -12,7 +12,24 @@ steps:
 - checkout: self
   clean: true
 
+- task: CopyFilesOverSSH@0
+  displayName: 'Sync code to VM staging directory'
+  inputs:
+    sshEndpoint: 'ssh-odoo17'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: |
+      **/*
+      !.git/**
+      !.github/**
+      !**/filestore/**
+      !**/.local/share/Odoo/**
+      !.DS_Store              
+      !custom-addons/**
 
+    targetFolder: '$(stagePath)'
+    cleanTargetFolder: true
+    overwrite: true
+    failOnEmptySource: true
 
 
 
@@ -24,6 +41,6 @@ steps:
     commands: |
       sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
     
-      sudo chmod +x $(updateScript)
+      #sudo chmod +x $(updateScript)
       sudo $(updateScript)
     readyTimeout: '20000'
