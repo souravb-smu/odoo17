@@ -1,15 +1,12 @@
 trigger:
 - main
 
-
 pool:
-  vmImage: 'ubuntu-latest'
-
+  name: Default
 
 variables:
   stagePath: '/home/azureuser/deploy-temp'
   updateScript: '/opt/odoo17/update_code.sh'
-
 
 steps:
 - checkout: self
@@ -26,6 +23,15 @@ steps:
       !.github/**
       !**/filestore/**
       !**/.local/share/Odoo/**
+
+      # -----------------------------------------
+      # ⛔ IGNORE ADDONS YOU DO NOT WANT TO DEPLOY
+      # -----------------------------------------
+      !addons/**                 # ignore entire addons folder
+      !custom-addons/**          # ignore your custom-addons
+      !some-other-addons/**      # (add more if needed)
+      # -----------------------------------------
+
     targetFolder: '$(stagePath)'
     cleanTargetFolder: true
     overwrite: true
