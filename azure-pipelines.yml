@@ -20,6 +20,8 @@ steps:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
+      whoami
+      sudo -l
       /usr/bin/sudo -n /bin/chmod +x /opt/odoo17/update_code.sh
       /usr/bin/sudo -n /opt/odoo17/update_code.sh
     readyTimeout: '20000'
