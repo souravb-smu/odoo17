@@ -12,6 +12,26 @@ steps:
 - checkout: self
   clean: true
 
+- task: CopyFilesOverSSH@0
+  displayName: 'Sync code to VM staging directory'
+  inputs:
+    sshEndpoint: 'ssh-odoo17'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: |
+      **/*
+      !.git/**
+      !.github/**
+      !**/filestore/**
+      !**/.local/share/Odoo/**
+      !.DS_Store
+      !addons/**               
+      !custom-addons/**
+      !**/vsts-agent-osx-x64-4.26/**
+
+    targetFolder: '$(stagePath)'
+    cleanTargetFolder: true
+    overwrite: true
+    failOnEmptySource: true
 
 - task: SSH@0
   displayName: 'Run update script on VM'
