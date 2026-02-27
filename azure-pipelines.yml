@@ -17,11 +17,10 @@ steps:
 
 
 - task: SSH@0
-  displayName: 'Run update script on VM'
+  displayName: 'Run update script on VM (bash form)'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      /usr/bin/sudo -n /usr/bin/chmod +x "$(updateScript)"
-      /usr/bin/sudo -n "$(updateScript)"
+      /usr/bin/sudo -n /usr/bin/env bash "$(updateScript)"
     readyTimeout: '20000'
