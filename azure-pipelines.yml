@@ -2,7 +2,40 @@ trigger:
 - main
 
 pool:
-  name: Default
+  name: Default      # <-- your actual pool name
+
+variables:
+  stagePath: '/opt/odoo17/deploy-temp'
+  updateScript: '/opt/odoo17/update_code.sh'
 
 steps:
-- script: echo "Running on self-hosted agent"
+- task: Checkout@1
+  displayName: 'Checkout repository'
+  inputs:
+    clean: true
+
+- task: CopyFilesOverSSH@0
+  displayName: 'Sync code to VM staging directory'
+  inputs:
+    sshEndpoint: 'ssh-odoo17'
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: |
+      **/*
+      !.git/**
+      !.github/**
+      !**/filestore/**
+      !**/.local/share/Odoo/**
+    targetFolder: '$(stagePath)'
+    cleanTargetFolder: true
+    overwrite: true
+    failOnEmptySource: true
+
+- task: SSH@0
+  displayName: 'Run update script on VM'
+  inputs:
+    sshEndpoint: 'ssh-odoo17'
+    runOptions: 'commands'
+    commands: |
+      sudo chmod +x $(updateScript)
+      sudo $(updateScript)
+    readyTimeout: '20000'
