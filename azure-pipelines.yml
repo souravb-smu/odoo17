@@ -17,12 +17,13 @@ steps:
 
 
 - task: SSH@0
-  displayName: 'Run update script on VM (bash form)'
+  displayName: 'Run update script on VM'
   inputs:
     sshEndpoint: 'ssh-odoo17'
     runOptions: 'commands'
     commands: |
-      echo "Updating code..."
-      sudo chmod +x /opt/odoo17/update_code.sh
-      sudo /opt/odoo17/update_code.sh
+      sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
+    
+      #sudo chmod +x $(updateScript)
+      sudo $(updateScript)
     readyTimeout: '20000'
