@@ -15,30 +15,36 @@ steps:
   clean: true
 
 - task: SSH@0
-  displayName: "Simple fresh clone into stagePath with exclusions"
+  displayName: "Fresh clone into stagePath with exclusions (simple)"
   inputs:
     sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
       set -e
 
-      STAGE="$(stagePath)"
-      REPO="$(repoUrl)"
-      BRANCH="$(branchName)"
+      # Use Azure variables directly so they are expanded before SSH
+      echo ">>> Using stagePath: $(stagePath)"
+      echo ">>> Repo: $(repoUrl)"
+      echo ">>> Branch: $(branchName)"
 
-      echo ">>> Cleaning stagePath"
-      rm -rf "$STAGE"
-      mkdir -p "$STAGE"
+      # Ensure stage path exists
+      mkdir -p "$(stagePath)"
+      cd "$(stagePath)"
 
-      echo ">>> Cloning repo (shallow)"
-      git clone --depth 1 --branch "$BRANCH" "$REPO" "$STAGE"
+      # Make the directory empty so we can clone into '.'
+      # Keep the directory itself, remove only contents (including hidden files)
+      rm -rf ./* ./.??* || true
 
-      cd "$STAGE"
+      echo ">>> Cloning repo (shallow) into $(stagePath)"
+      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
-      echo ">>> Removing unwanted folders"
+      echo ">>> Removing unwanted folders/files"
       rm -rf .git
       rm -rf .github
+      rm -rf **/filestore 2>/dev/null || true
+      rm -rf **/.local/share/Odoo 2>/dev/null || true
+      rm -rf custom-addons/helpdesk 2>/dev/null || true
       rm -f .DS_Store
 
-      echo ">>> Staging folder ready"
+      echo ">>> Staging folder ready:"
       ls -la
