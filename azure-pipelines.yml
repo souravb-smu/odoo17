@@ -37,8 +37,6 @@ steps:
       git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
       echo ">>> Removing unwanted folders/files"
-      sudo rm -rf .git
-      sudo rm -rf .github
       sudo rm -f .DS_Store
 
       echo ">>> Staging folder ready:"
