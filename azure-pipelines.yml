@@ -7,7 +7,7 @@ pool:
 variables:
   stagePath: '/home/azureuser/deploy-temp'
   updateScript: '/opt/odoo17/update_code.sh'
-  repoUrl: 'git@github.com:souravb-smu/odoo17.git'
+  repoUrl: 'https://github.com/souravb-smu/odoo17.git'
   branchName: 'main'
 
 steps:
@@ -29,10 +29,7 @@ steps:
       sudo rm -rf "$(stagePath)"
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
-      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
-
-      # Clone repo fresh
-      #git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
+      git clone "$(repoUrl)" .
 
       # Remove unwanted files
       rm -f .DS_Store
