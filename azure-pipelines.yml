@@ -39,11 +39,7 @@ steps:
       git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
       echo ">>> Removing unwanted folders/files"
-      rm -rf .git
       rm -rf .github
-      rm -rf **/filestore 2>/dev/null || true
-      rm -rf **/.local/share/Odoo 2>/dev/null || true
-      rm -rf custom-addons/helpdesk 2>/dev/null || true
       rm -f .DS_Store
 
       echo ">>> Staging folder ready:"
