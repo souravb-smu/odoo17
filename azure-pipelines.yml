@@ -29,7 +29,7 @@ steps:
       cd "$(stagePath)"
       git clone "$(repoUrl)" --quiet
       mv odoo17 deploy-temp
-
+      cd deploy-temp
       # Remove unwanted files
       rm -f .DS_Store
       rm -rf .github
