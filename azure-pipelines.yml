@@ -15,7 +15,7 @@ steps:
   clean: true
 
 - task: SSH@0
-  displayName: "Fresh clone into stagePath"
+  displayName: "Sync github code into stagePath"
   inputs:
     sshEndpoint: ssh-odoo17
     runOptions: commands
@@ -36,3 +36,14 @@ steps:
 
       echo ">>> Stage folder ready:"
       ls -la
+- task: SSH@0
+  displayName: 'Run update script on VM'
+  inputs:
+    sshEndpoint: 'ssh-odoo17'
+    runOptions: 'commands'
+    commands: |
+      sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
+    
+      #sudo chmod +x $(updateScript)
+      sudo $(updateScript)
+    readyTimeout: '20000'
