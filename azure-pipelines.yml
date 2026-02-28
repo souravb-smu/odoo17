@@ -5,7 +5,7 @@ pool:
   name: Default
 
 variables:
-  stagePath: '/home/azureuser/odoo-temp'
+  stagePath: '/home/azureuser/'
   updateScript: '/opt/odoo17/update_code.sh'
   repoUrl: 'https://github.com/souravb-smu/odoo17.git'
   branchName: 'main'
@@ -26,10 +26,9 @@ steps:
       echo ">>> Branch: $(branchName)"
 
       # Remove previous folder completely
-      sudo rm -rf "$(stagePath)"
-      mkdir -p "$(stagePath)"
       cd "$(stagePath)"
-      git clone "$(repoUrl)"
+      git clone "$(repoUrl)" --quiet
+      mv odoo17 deploy-temp
 
       # Remove unwanted files
       rm -f .DS_Store
