@@ -20,14 +20,18 @@ steps:
     sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
+      #!/bin/bash
       set -e
+
       echo ">>> Using stagePath: $(stagePath)"
       echo ">>> Repo: $(repoUrl)"
       echo ">>> Branch: $(branchName)"
 
+      # Ensure stagePath exists
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
 
+      # Fetch only changed files
       if [ ! -d ".git" ]; then
         echo ">>> First time clone"
         git init
@@ -40,7 +44,8 @@ steps:
         git reset --hard origin/"$(branchName)"
       fi
 
-      echo ">>> Removing unwanted files"
-      sudo rm -f .DS_Store
+      # Remove unwanted files (if any)
+      rm -f .DS_Store || true
+
       echo ">>> Stage folder ready:"
       ls -la
