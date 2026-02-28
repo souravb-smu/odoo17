@@ -15,29 +15,32 @@ steps:
   clean: true
 
 - task: SSH@0
-  displayName: "Fresh clone into stagePath with exclusions (simple)"
+  displayName: "Pull only changed files into stagePath"
   inputs:
     sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
       set -e
-
-      # Use Azure variables directly so they are expanded before SSH
       echo ">>> Using stagePath: $(stagePath)"
       echo ">>> Repo: $(repoUrl)"
       echo ">>> Branch: $(branchName)"
 
-      # Ensure stage path exists
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
 
-      # Make the directory empty so we can clone into '.'
+      if [ ! -d ".git" ]; then
+        echo ">>> First time clone"
+        git init
+        git remote add origin "$(repoUrl)"
+        git fetch --depth 1 origin "$(branchName)"
+        git checkout -f FETCH_HEAD
+      else
+        echo ">>> Pulling latest changes"
+        git fetch origin "$(branchName)"
+        git reset --hard origin/"$(branchName)"
+      fi
 
-      echo ">>> Cloning repo (shallow) into $(stagePath)"
-      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
-
-      echo ">>> Removing unwanted folders/files"
+      echo ">>> Removing unwanted files"
       sudo rm -f .DS_Store
-
-      echo ">>> Staging folder ready:"
+      echo ">>> Stage folder ready:"
       ls -la
