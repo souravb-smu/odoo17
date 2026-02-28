@@ -32,15 +32,14 @@ steps:
       cd "$(stagePath)"
 
       # Make the directory empty so we can clone into '.'
-      # Keep the directory itself, remove only contents (including hidden files)
-      rm -rf ./* ./.??* || true
 
       echo ">>> Cloning repo (shallow) into $(stagePath)"
       git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
       echo ">>> Removing unwanted folders/files"
-      rm -rf .github
-      rm -f .DS_Store
+      sudo rm -rf .git
+      sudo rm -rf .github
+      sudo rm -f .DS_Store
 
       echo ">>> Staging folder ready:"
       ls -la
