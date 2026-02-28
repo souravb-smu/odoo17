@@ -26,12 +26,13 @@ steps:
       echo ">>> Branch: $(branchName)"
 
       # Remove previous folder completely
-      rm -rf "$(stagePath)"
+      sudo rm -rf "$(stagePath)"
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
+      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
       # Clone repo fresh
-      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
+      #git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
       # Remove unwanted files
       rm -f .DS_Store
