@@ -15,7 +15,7 @@ steps:
   clean: true
 
 - task: SSH@0
-  displayName: "Pull only changed files into stagePath"
+  displayName: "Fresh clone into stagePath"
   inputs:
     sshEndpoint: ssh-odoo17
     runOptions: commands
@@ -25,13 +25,17 @@ steps:
       echo ">>> Repo: $(repoUrl)"
       echo ">>> Branch: $(branchName)"
 
+      # Remove previous folder completely
+      rm -rf "$(stagePath)"
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
 
-      # if .git exists → fetch & reset; else shallow clone
-      [ -d ".git" ] && echo ">>> Pulling latest changes" && git fetch origin "$(branchName)" && git reset --hard origin/"$(branchName)" || (echo ">>> First time clone" && git init && git remote add origin "$(repoUrl)" && git fetch --depth 1 origin "$(branchName)" && git checkout -f FETCH_HEAD)
+      # Clone repo fresh
+      git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
 
-      rm -f .DS_Store || true
+      # Remove unwanted files
+      rm -f .DS_Store
+      rm -rf .github
 
       echo ">>> Stage folder ready:"
       ls -la
