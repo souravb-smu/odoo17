@@ -29,7 +29,7 @@ steps:
       sudo rm -rf "$(stagePath)"
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
-      git clone "$(repoUrl)" .
+      git clone "$(repoUrl)"
 
       # Remove unwanted files
       rm -f .DS_Store
