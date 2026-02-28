@@ -12,26 +12,69 @@ steps:
 - checkout: self
   clean: true
 
-- task: CopyFilesOverSSH@0
-  displayName: 'Sync code to VM staging directory'
+- task: SSH@0
+  displayName: "Update stagePath only if git has changes (exclude unwanted paths)"
   inputs:
-    sshEndpoint: 'ssh-odoo17'
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: |
-      **/*
+    sshEndpoint: "ssh-odoo17"
+    runOptions: commands
+    commands: |
+      set -e
+
+      cd "$(stagePath)"
+
+      # First-time setup: clone and configure sparse-checkout
+      if [ ! -d ".git" ]; then
+        echo ">>> First-time clone"
+        git clone --depth 1 --branch main git@github.com:souravb-smu/odoo17.git .
+        echo ">>> Enable sparse-checkout and exclude unwanted paths"
+        git sparse-checkout init --no-cone
+        cat > .git/info/sparse-checkout << 'EOF'
+        /*                      # include everything by default
+        !.git/**
+        !.github/**
+        !**/filestore/**
+        !**/.local/share/Odoo/**
+        !**/vsts-agent-osx-x64-4.26/**
+        !.DS_Store     
+        !/custom-addons/helpdesk/** # exclude that feature folder
+        EOF
+        git sparse-checkout reapply
+        exit 0
+      fi
+
+      # Existing repo: ensure sparse rules are applied (idempotent)
+      git sparse-checkout init --no-cone || true
+      cat > .git/info/sparse-checkout << 'EOF'
+      /*                      
       !.git/**
       !.github/**
       !**/filestore/**
       !**/.local/share/Odoo/**
-      !.DS_Store
-      !addons/**               
-      !custom-addons/**
       !**/vsts-agent-osx-x64-4.26/**
+      !.DS_Store     
+      !/custom-addons/helpdesk/** # exclude that feature folder
+      EOF
+      git sparse-checkout reapply
 
-    targetFolder: '$(stagePath)'
-    cleanTargetFolder: true
-    overwrite: true
-    failOnEmptySource: true
+      # Fetch and update only if there are changes
+      git fetch origin main --depth=1
+
+      LOCAL=$(git rev-parse HEAD)
+      REMOTE=$(git rev-parse origin/main)
+
+      if [ "$LOCAL" = "$REMOTE" ]; then
+        echo ">>> No changes in git. Skipping update."
+        exit 0
+      fi
+
+      echo ">>> Changes detected, updating working tree to origin/main"
+      git reset --hard origin/main
+      # Optional: clean untracked/ignored junk; sparse rules stay in effect
+      git clean -fdx
+
+      echo ">>> Updated to latest commit:"
+      git --no-pager log -1 --oneline
+
 
 - task: SSH@0
   displayName: 'Run update script on VM'
@@ -42,5 +85,5 @@ steps:
       sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
     
       #sudo chmod +x $(updateScript)
-      sudo $(updateScript)
+      #sudo $(updateScript)
     readyTimeout: '20000'
