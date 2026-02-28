@@ -27,6 +27,7 @@ steps:
 
       # Remove previous folder completely
       cd "$(stagePath)"
+      rm -rf deploy-temp
       git clone "$(repoUrl)" --quiet
       mv odoo17 deploy-temp
       cd deploy-temp
