@@ -7,83 +7,86 @@ pool:
 variables:
   stagePath: '/home/azureuser/deploy-temp'
   updateScript: '/opt/odoo17/update_code.sh'
+  repoUrl: 'git@github.com:souravb-smu/odoo17.git'
+  branchName: 'main'
 
 steps:
 - checkout: self
   clean: true
 
 - task: SSH@0
-  displayName: "Update stagePath only if git has changes (exclude unwanted paths)"
+  displayName: Update stagePath only if git has changes (exclude unwanted paths)
   inputs:
-    sshEndpoint: "ssh-odoo17"
+    sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
       set -e
 
+      mkdir -p "$(stagePath)"
       cd "$(stagePath)"
 
-      # First-time setup: clone and configure sparse-checkout
+      # First-time setup: shallow clone
       if [ ! -d ".git" ]; then
         echo ">>> First-time clone"
-        git clone --depth 1 --branch main git@github.com:souravb-smu/odoo17.git .
+        git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
         echo ">>> Enable sparse-checkout and exclude unwanted paths"
         git sparse-checkout init --no-cone
-        cat > .git/info/sparse-checkout << 'EOF'
-        /*                      # include everything by default
-        !.git/**
-        !.github/**
-        !**/filestore/**
-        !**/.local/share/Odoo/**
-        !**/vsts-agent-osx-x64-4.26/**
-        !.DS_Store     
-        !/custom-addons/helpdesk/** # exclude that feature folder
-        EOF
-        git sparse-checkout reapply
+        # Include everything, then exclude specific paths (arguments avoid heredoc)
+        git sparse-checkout set \
+          '/*' \
+          '!/.github/**' \
+          '!/**/filestore/**' \
+          '!/**/.local/share/Odoo/**' \
+          '!/custom-addons/helpdesk/**' \
+          '!/.DS_Store'
         exit 0
       fi
 
-      # Existing repo: ensure sparse rules are applied (idempotent)
+      # Existing repo: ensure remote/branch and sparse rules are set (idempotent)
+      git remote set-url origin "$(repoUrl)" || true
+
+      # Make sure target branch exists locally
+      if ! git rev-parse --verify "$(branchName)" >/dev/null 2>&1; then
+        git fetch --prune origin
+        git checkout -b "$(branchName)" "origin/$(branchName)"
+      else
+        git checkout "$(branchName)"
+      fi
+
+      # (Re)apply sparse-checkout exclusions safely
       git sparse-checkout init --no-cone || true
-      cat > .git/info/sparse-checkout << 'EOF'
-      /*                      
-      !.git/**
-      !.github/**
-      !**/filestore/**
-      !**/.local/share/Odoo/**
-      !**/vsts-agent-osx-x64-4.26/**
-      !.DS_Store     
-      !/custom-addons/helpdesk/** # exclude that feature folder
-      EOF
-      git sparse-checkout reapply
+      git sparse-checkout set \
+        '/*' \
+        '!/.github/**' \
+        '!/**/filestore/**' \
+        '!/**/.local/share/Odoo/**' \
+        '!/custom-addons/helpdesk/**' \
+        '!/.DS_Store'
 
-      # Fetch and update only if there are changes
-      git fetch origin main --depth=1
+      # Fetch and only update if there are changes
+      git fetch origin "$(branchName)" --depth=1
 
-      LOCAL=$(git rev-parse HEAD)
-      REMOTE=$(git rev-parse origin/main)
+      LOCAL="$(git rev-parse HEAD)"
+      REMOTE="$(git rev-parse origin/$(branchName))"
 
       if [ "$LOCAL" = "$REMOTE" ]; then
         echo ">>> No changes in git. Skipping update."
         exit 0
       fi
 
-      echo ">>> Changes detected, updating working tree to origin/main"
-      git reset --hard origin/main
-      # Optional: clean untracked/ignored junk; sparse rules stay in effect
+      echo ">>> Changes detected, updating working tree to origin/$(branchName)"
+      git reset --hard "origin/$(branchName)"
       git clean -fdx
 
       echo ">>> Updated to latest commit:"
       git --no-pager log -1 --oneline
 
-
 - task: SSH@0
-  displayName: 'Run update script on VM'
+  displayName: Run update script on VM
   inputs:
-    sshEndpoint: 'ssh-odoo17'
-    runOptions: 'commands'
+    sshEndpoint: ssh-odoo17
+    runOptions: commands
     commands: |
       sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
-    
-      #sudo chmod +x $(updateScript)
-      #sudo $(updateScript)
-    readyTimeout: '20000'
+      #sudo "$(updateScript)"
+    readyTimeout: 20000
