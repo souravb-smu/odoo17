@@ -22,14 +22,13 @@ steps:
     commands: |
       set -e
 
-      STAGE="/home/azureuser/deploy-temp"
-      REPO="git@github.com:souravb-smu/odoo17.git"
-      BRANCH="main"
+      STAGE="$(stagePath)"
+      REPO="$(repoUrl)"
+      BRANCH="$(branchName)"
 
       echo ">>> Cleaning stagePath"
       rm -rf "$STAGE"
       mkdir -p "$STAGE"
-      cd "$STAGE"
 
       echo ">>> Cloning repo (shallow)"
       git clone --depth 1 --branch "$BRANCH" "$REPO" "$STAGE"
