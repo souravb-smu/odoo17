@@ -15,81 +15,31 @@ steps:
   clean: true
 
 - task: SSH@0
-  displayName: Update stagePath only if git has changes (exclude unwanted paths)
+  displayName: "Simple fresh clone into stagePath with exclusions"
   inputs:
     sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
       set -e
 
-      mkdir -p "$(stagePath)"
-      cd "$(stagePath)"
+      STAGE="/home/azureuser/deploy-temp"
+      REPO="git@github.com:souravb-smu/odoo17.git"
+      BRANCH="main"
 
-      if [ ! -d ".git" ]; then
-        echo ">>> First-time clone"
-        git clone --depth 1 --branch "$(branchName)" "$(repoUrl)" .
+      echo ">>> Cleaning stagePath"
+      rm -rf "$STAGE"
+      mkdir -p "$STAGE"
+      cd "$STAGE"
 
-        echo ">>> Enable sparse-checkout and exclude unwanted paths"
-        git sparse-checkout init --no-cone
-        # Include everything, then exclude specific paths (arguments avoid heredoc)
-        git sparse-checkout set \
-          '/*' \
-          '!/.github/**' \
-          '!/**/filestore/**' \
-          '!/**/.local/share/Odoo/**' \
-          '!/custom-addons/helpdesk/**' \
-          '!/.DS_Store'
+      echo ">>> Cloning repo (shallow)"
+      git clone --depth 1 --branch "$BRANCH" "$REPO" "$STAGE"
 
-        # Ensure the working tree reflects the sparse rules
-        git reset --hard
-        git clean -fdx
-      else
-        echo ">>> Existing repo found; ensure remote/branch and sparse rules are set"
-        git remote set-url origin "$(repoUrl)" || true
+      cd "$STAGE"
 
-        # Make sure target branch exists locally and is checked out
-        if ! git rev-parse --verify "$(branchName)" >/dev/null 2>&1; then
-          git fetch --prune origin
-          git checkout -b "$(branchName)" "origin/$(branchName)"
-        else
-          git checkout "$(branchName)"
-        fi
+      echo ">>> Removing unwanted folders"
+      rm -rf .git
+      rm -rf .github
+      rm -f .DS_Store
 
-        # (Re)apply sparse-checkout exclusions safely (idempotent)
-        git sparse-checkout init --no-cone || true
-        git sparse-checkout set \
-          '/*' \
-          '!/.github/**' \
-          '!/**/filestore/**' \
-          '!/**/.local/share/Odoo/**' \
-          '!/custom-addons/helpdesk/**' \
-          '!/.DS_Store'
-
-        # Fetch and only update if there are changes
-        git fetch origin "$(branchName)" --depth=1
-
-        LOCAL="$(git rev-parse HEAD)"
-        REMOTE="$(git rev-parse origin/$(branchName))"
-
-        if [ "$LOCAL" = "$REMOTE" ]; then
-          echo ">>> No changes in git. Skipping update."
-          exit 0
-        fi
-
-        echo ">>> Changes detected, updating working tree to origin/$(branchName)"
-        git reset --hard "origin/$(branchName)"
-        git clean -fdx
-
-        echo ">>> Updated to latest commit:"
-        git --no-pager log -1 --oneline
-      fi
-
-- task: SSH@0
-  displayName: Run update script on VM
-  inputs:
-    sshEndpoint: ssh-odoo17
-    runOptions: commands
-    commands: |
-      sudo -n true || (echo "ERROR: azureuser NOPASSWD not effective" && exit 1)
-      #sudo "$(updateScript)"
-    readyTimeout: 20000
+      echo ">>> Staging folder ready"
+      ls -la
