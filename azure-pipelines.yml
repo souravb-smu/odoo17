@@ -20,31 +20,17 @@ steps:
     sshEndpoint: ssh-odoo17
     runOptions: commands
     commands: |
-      #!/bin/bash
       set -e
-
       echo ">>> Using stagePath: $(stagePath)"
       echo ">>> Repo: $(repoUrl)"
       echo ">>> Branch: $(branchName)"
 
-      # Ensure stagePath exists
       mkdir -p "$(stagePath)"
       cd "$(stagePath)"
 
-      # Fetch only changed files
-      if [ ! -d ".git" ]; then
-        echo ">>> First time clone"
-        git init
-        git remote add origin "$(repoUrl)"
-        git fetch --depth 1 origin "$(branchName)"
-        git checkout -f FETCH_HEAD
-      else
-        echo ">>> Pulling latest changes"
-        git fetch origin "$(branchName)"
-        git reset --hard origin/"$(branchName)"
-      fi
+      # if .git exists → fetch & reset; else shallow clone
+      [ -d ".git" ] && echo ">>> Pulling latest changes" && git fetch origin "$(branchName)" && git reset --hard origin/"$(branchName)" || (echo ">>> First time clone" && git init && git remote add origin "$(repoUrl)" && git fetch --depth 1 origin "$(branchName)" && git checkout -f FETCH_HEAD)
 
-      # Remove unwanted files (if any)
       rm -f .DS_Store || true
 
       echo ">>> Stage folder ready:"
