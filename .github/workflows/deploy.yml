@@ -2,7 +2,7 @@ name: Deploy ESMOS Odoo
 
 on:
   repository_dispatch:
-    types: [azure-monitor-alert] 
+    types: [azure-monitor-alert]
   push:
     branches:
       - master
