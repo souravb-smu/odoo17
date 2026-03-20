@@ -28,12 +28,12 @@ jobs:
           push: true
           tags: darrentiang0/esmos-odoo:latest
 
-      - name: Deploy to EC2
+      - name: Deploy to Staging
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          host: ${{ secrets.STAGING_HOST }}
+          username: azureuser
+          key: ${{ secrets.STAGING_KEY }}
           script: |
             cd ~/esmos-odoo
             docker pull darrentiang0/esmos-odoo:latest
