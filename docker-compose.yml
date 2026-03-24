@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+
+  # ─── PostgreSQL 15 (Odoo database) ───────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: odoo
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+    networks:
+      - esmos
+
+  # ─── Odoo 16.0 ───────────────────────────────────────────────────────────────
+  odoo:
+    image: odoo:16.0
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      HOST: postgres
+      PORT: 5432
+      USER: odoo
+      PASSWORD: ${ODOO_DB_PASSWORD}
+    volumes:
+      - /data/odoo/addons:/mnt/extra-addons
+      - /data/odoo/filestore:/var/lib/odoo
+    networks:
+      - esmos
+
+  # ─── MariaDB 10.6 (Moodle database) ──────────────────────────────────────────
+  mariadb:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: moodle
+      MYSQL_USER: moodle
+      MYSQL_PASSWORD: ${MOODLE_DB_PASSWORD}
+    volumes:
+      - /data/mariadb:/var/lib/mysql
+    networks:
+      - esmos
+
+  # ─── Moodle LMS ──────────────────────────────────────────────────────────────
+  moodle:
+    image: bitnami/moodle:4
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+    environment:
+      MOODLE_DATABASE_HOST: mariadb
+      MOODLE_DATABASE_PORT_NUMBER: 3306
+      MOODLE_DATABASE_USER: moodle
+      MOODLE_DATABASE_PASSWORD: ${MOODLE_DB_PASSWORD}
+      MOODLE_DATABASE_NAME: moodle
+      MOODLE_USERNAME: admin
+      MOODLE_PASSWORD: ${MOODLE_ADMIN_PASSWORD}
+      MOODLE_SITE_NAME: ESMOS Training
+      MOODLE_WWWROOT: https://training.esmos.internal
+      PHP_ENABLE_OPCACHE: yes
+    volumes:
+      - /data/moodle/data:/bitnami/moodle
+      - /data/moodle/moodledata:/bitnami/moodledata
+    networks:
+      - esmos
+
+  # ─── Nginx reverse proxy ──────────────────────────────────────────────────────
+  nginx:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - /data/nginx/certs:/etc/nginx/certs:ro
+      - /data/nginx/certbot/www:/var/www/certbot:ro
+    depends_on:
+      - odoo
+      - moodle
+    networks:
+      - esmos
+
+networks:
+  esmos:
+    driver: bridge

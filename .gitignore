@@ -1,0 +1,9 @@
+# Secrets - never commit
+.env
+
+# Azure DevOps agent (installed on VM, not part of source)
+agent/
+
+# OS noise
+.DS_Store
+Thumbs.db
