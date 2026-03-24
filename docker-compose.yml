@@ -48,24 +48,18 @@ services:
 
   # ─── Moodle LMS ──────────────────────────────────────────────────────────────
   moodle:
-    image: bitnami/moodle:4
+    build: ./moodle
     restart: unless-stopped
     depends_on:
       - mariadb
     environment:
       MOODLE_DATABASE_HOST: mariadb
-      MOODLE_DATABASE_PORT_NUMBER: 3306
+      MOODLE_DATABASE_NAME: moodle
       MOODLE_DATABASE_USER: moodle
       MOODLE_DATABASE_PASSWORD: ${MOODLE_DB_PASSWORD}
-      MOODLE_DATABASE_NAME: moodle
-      MOODLE_USERNAME: admin
-      MOODLE_PASSWORD: ${MOODLE_ADMIN_PASSWORD}
-      MOODLE_SITE_NAME: ESMOS Training
       MOODLE_WWWROOT: https://training.esmos.internal
-      PHP_ENABLE_OPCACHE: yes
     volumes:
-      - /data/moodle/data:/bitnami/moodle
-      - /data/moodle/moodledata:/bitnami/moodledata
+      - /data/moodle/moodledata:/var/www/moodledata
     networks:
       - esmos
 
